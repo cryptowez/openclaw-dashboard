@@ -1,8 +1,0 @@
-{
-  "name": "test-project-2",
-  "version": "1.0.0",
-  "scripts": {
-    "build": "echo Build successful",
-    "dev": "node index.js"
-  }
-}
