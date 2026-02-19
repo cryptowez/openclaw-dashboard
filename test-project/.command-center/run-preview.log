@@ -1,0 +1,15 @@
+== npm install ==
+
+up to date, audited 1 package in 104ms
+
+found 0 vulnerabilities
+
+
+== npm run dev ==
+
+> test-project@1.0.0 dev
+> node index.js
+
+Preview successful
+
+
