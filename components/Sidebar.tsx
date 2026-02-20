@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { Folder, Plus, Database } from 'lucide-react';
 import { projects } from '../lib/mock';
 import PriorityButtons from './PriorityButtons';
+import CreateProjectModal from './CreateProjectModal';
+import ImportGitModal from './ImportGitModal';
 
 interface SidebarProps {
   selectedPriority: string | null;
@@ -69,6 +71,20 @@ export default function Sidebar({ selectedPriority, onSelectPriority }: SidebarP
         <Database className="h-4 w-4" />
         <span>Vault</span>
       </Link>
+
+      {showCreateModal && (
+        <CreateProjectModal
+          isOpen={showCreateModal}
+          onClose={() => setShowCreateModal(false)}
+        />
+      )}
+
+      {showImportModal && (
+        <ImportGitModal
+          isOpen={showImportModal}
+          onClose={() => setShowImportModal(false)}
+        />
+      )}
     </div>
   );
 }
