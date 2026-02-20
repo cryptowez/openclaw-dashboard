@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { X, Copy, Monitor } from 'lucide-react';
-import MonacoEditor from 'react-monaco-editor';
 
 export default function CodePreview({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const [activeTab, setActiveTab] = useState<'tree' | 'editor' | 'preview'>('tree');
@@ -60,20 +59,17 @@ export default function CodePreview({ isOpen, onClose }: { isOpen: boolean; onCl
             </div>
             <div className="h-[calc(100%-64px)]">
               {activeTab === 'tree' && (
-                <div>File tree goes here</div>
+                <div className="text-gray-400">File tree will be displayed here</div>
               )}
               {activeTab === 'editor' && (
-                <MonacoEditor
-                  language="typescript"
-                  theme="vs-dark"
-                  options={{
-                    minimap: { enabled: false },
-                    scrollBeyondLastLine: false,
-                  }}
+                <textarea
+                  className="w-full h-full bg-gray-800 text-gray-300 font-mono p-4 rounded border border-gray-700 resize-none focus:outline-none focus:border-blue-500"
+                  placeholder="Code editor - Monaco will be added later"
+                  readOnly
                 />
               )}
               {activeTab === 'preview' && (
-                <div>Browser preview goes here</div>
+                <div className="text-gray-400">Browser preview will be displayed here</div>
               )}
             </div>
           </div>
