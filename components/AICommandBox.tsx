@@ -12,7 +12,7 @@ interface AICommandBoxProps {
 export default function AICommandBox({ projectName, onCommand }: AICommandBoxProps) {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedModel, setSelectedModel] = useState(OPENROUTER_MODELS.HAIKU);
+  const [selectedModel, setSelectedModel] = useState<keyof typeof OPENROUTER_MODELS>(OPENROUTER_MODELS.HAIKU);
   const [response, setResponse] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -52,12 +52,14 @@ export default function AICommandBox({ projectName, onCommand }: AICommandBoxPro
         <label className="text-sm text-gray-400">Model:</label>
         <select
           value={selectedModel}
-          onChange={(e) => setSelectedModel(e.target.value)}
+          onChange={(e) => setSelectedModel(e.target.value as keyof typeof OPENROUTER_MODELS)}
           className="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-sm text-white"
         >
-          <option value={OPENROUTER_MODELS.HAIKU}>Haiku (Fast)</option>
-          <option value={OPENROUTER_MODELS.CLAUDE_45}>Claude 3.5</option>
-          <option value={OPENROUTER_MODELS.SONNET}>Sonnet (Powerful)</option>
+          {Object.keys(OPENROUTER_MODELS).map((model) => (
+            <option key={model} value={model}>
+              {OPENROUTER_MODELS[model as keyof typeof OPENROUTER_MODELS].split('/')[1]} ({OPENROUTER_MODELS[model as keyof typeof OPENROUTER_MODELS].split('/')[0] === 'anthropic/claude-3-haiku' ? 'Fast' : 'Powerful'})
+            </option>
+          ))}
         </select>
       </div>
       <form onSubmit={handleSubmit} className="flex gap-2">
