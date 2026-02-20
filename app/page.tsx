@@ -56,7 +56,6 @@ export default function Home() {
   const [importOpen, setImportOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [codePreviewOpen, setCodePreviewOpen] = useState(false);
-  const [aiCommand, setAiCommand] = useState('');
 
   const handleImportProject = (repo: { owner: string; name: string }) => {
     const newProject: Project = {
@@ -74,11 +73,6 @@ export default function Home() {
   const handleProjectClick = (project: Project) => {
     setSelectedProject(project);
     setCodePreviewOpen(true);
-  };
-
-  const handleAICommand = (command: string) => {
-    setAiCommand(command);
-    // Command will be processed and shown in CodePreviewModal
   };
 
   const demoFiles = [
@@ -104,7 +98,6 @@ export default function Home() {
       <div className="p-6">
         {/* Top Section */}
         <div className="grid grid-cols-4 gap-4 mb-6">
-          {/* Stats */}
           <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
             <p className="text-sm text-gray-400">Usage</p>
             <p className="text-2xl font-bold">23.5K</p>
@@ -113,7 +106,6 @@ export default function Home() {
             <p className="text-sm text-gray-400">Budget</p>
             <p className="text-2xl font-bold">100K</p>
           </div>
-          {/* Command Buttons */}
           <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
             <button
               onClick={() => setImportOpen(true)}
@@ -132,7 +124,7 @@ export default function Home() {
         {/* AI Command Box */}
         {selectedProject && (
           <div className="mb-6">
-            <AICommandBox projectName={selectedProject.name} onCommand={handleAICommand} />
+            <AICommandBox projectName={selectedProject.name} onCommand={() => {}} />
           </div>
         )}
 
@@ -210,7 +202,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Modals */}
       <ImportGitModal isOpen={importOpen} onClose={() => setImportOpen(false)} />
       <CodePreviewModal
         isOpen={codePreviewOpen}
