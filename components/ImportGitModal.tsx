@@ -3,10 +3,15 @@
 import { useState } from 'react';
 import { X } from 'lucide-react';
 
+interface GitRepo {
+  owner: string;
+  name: string;
+}
+
 export default function ImportGitModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const [url, setUrl] = useState('');
   const [priority, setPriority] = useState('red');
-  const [repo, setRepo] = useState(null);
+  const [repo, setRepo] = useState<GitRepo | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
