@@ -124,7 +124,7 @@ export default function Home() {
         {/* AI Command Box */}
         {selectedProject && (
           <div className="mb-6">
-            <AICommandBox projectName={selectedProject.name} onCommand={() => {}} />
+            <AICommandBox projectName={selectedProject?.name || ''} onCommand={() => {}} />
           </div>
         )}
 
