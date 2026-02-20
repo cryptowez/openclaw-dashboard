@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Send, Loader } from 'lucide-react';
-import { OPENROUTER_MODELS } from '@/lib/openrouter';
+import { OPENROUTER_MODELS, callOpenRouter } from '@/lib/openrouter';
 
 interface AICommandBoxProps {
   projectName: string;
@@ -12,8 +12,7 @@ interface AICommandBoxProps {
 export default function AICommandBox({ projectName, onCommand }: AICommandBoxProps) {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedModel, setSelectedModel] = useState(OPENROUTER_MODELS.HAIKU);
-  const [response, setResponse] = useState('');
+  const [selectedModel, setSelectedModel] = useState<typeof OPENROUTER_MODELS[keyof typeof OPENROUTER_MODELS]>(OPENROUTER_MODELS.HAIKU);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,26 +20,11 @@ export default function AICommandBox({ projectName, onCommand }: AICommandBoxPro
 
     setIsLoading(true);
     try {
-      const res = await fetch('/api/ai-command', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          projectName,
-          command: input,
-          model: selectedModel,
-        }),
-      });
-      const data = await res.json();
-      if (data.result) {
-        setResponse(data.result);
-        onCommand(input, data.result);
-        setInput('');
-      }
+      const { content, tokensUsed } = await callOpenRouter(selectedModel, `You are an expert developer helping to modify and improve the "${projectName}" project. Your role is to: 1. Generate code modifications based on user requests 2. Provide clear, production-ready code snippets 3. Suggest improvements and best practices 4. Keep token usage minimal by being concise 5. Always provide complete, working code`, input, 2000);
+      onCommand(input, content);
+      setInput('');
     } catch (error) {
       console.error('AI Command error:', error);
-      setResponse('Error: Failed to process command');
     } finally {
       setIsLoading(false);
     }
@@ -52,12 +36,14 @@ export default function AICommandBox({ projectName, onCommand }: AICommandBoxPro
         <label className="text-sm text-gray-400">Model:</label>
         <select
           value={selectedModel}
-          onChange={(e) => setSelectedModel(e.target.value)}
+          onChange={(e) => setSelectedModel(e.target.value as typeof OPENROUTER_MODELS[keyof typeof OPENROUTER_MODELS])}
           className="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-sm text-white"
         >
-          <option value={OPENROUTER_MODELS.HAIKU}>Haiku (Fast)</option>
-          <option value={OPENROUTER_MODELS.CLAUDE_45}>Claude 3.5</option>
-          <option value={OPENROUTER_MODELS.SONNET}>Sonnet (Powerful)</option>
+          {Object.values(OPENROUTER_MODELS).map((model) => (
+            <option key={model} value={model}>
+              {model.split('/')[1]} ({model.split('/')[0] === 'anthropic/claude-3-haiku' ? 'Fast' : 'Powerful'})
+            </option>
+          ))}
         </select>
       </div>
       <form onSubmit={handleSubmit} className="flex gap-2">
@@ -81,11 +67,6 @@ export default function AICommandBox({ projectName, onCommand }: AICommandBoxPro
           )}
         </button>
       </form>
-      {response && (
-        <div className="bg-gray-800 border border-gray-700 rounded p-3 max-h-40 overflow-y-auto">
-          <p className="text-sm text-gray-300 whitespace-pre-wrap">{response}</p>
-        </div>
-      )}
     </div>
   );
 }
