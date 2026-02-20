@@ -1,6 +1,6 @@
 export const OPENROUTER_MODELS = {
   HAIKU: 'anthropic/claude-3-haiku',
-  CLAUDE_45: 'anthropic/claude-3.5-haiku',
+  CLAUDE_45: 'anthropic/claude-3.5-sonnet',
   SONNET: 'anthropic/claude-3.5-sonnet',
 } as const;
 
