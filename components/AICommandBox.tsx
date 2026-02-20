@@ -12,7 +12,7 @@ interface AICommandBoxProps {
 export default function AICommandBox({ projectName, onCommand }: AICommandBoxProps) {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedModel, setSelectedModel] = useState<typeof OPENROUTER_MODELS[keyof typeof OPENROUTER_MODELS]>(OPENROUTER_MODELS.HAIKU);
+  const [selectedModel, setSelectedModel] = useState<string>(OPENROUTER_MODELS.HAIKU);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,7 +36,7 @@ export default function AICommandBox({ projectName, onCommand }: AICommandBoxPro
         <label className="text-sm text-gray-400">Model:</label>
         <select
           value={selectedModel}
-          onChange={(e) => setSelectedModel(e.target.value as typeof OPENROUTER_MODELS[keyof typeof OPENROUTER_MODELS])}
+          onChange={(e) => setSelectedModel(e.target.value)}
           className="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-sm text-white"
         >
           {Object.values(OPENROUTER_MODELS).map((model) => (
