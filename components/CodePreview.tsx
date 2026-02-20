@@ -53,7 +53,7 @@ export default function CodePreview({ project, onClosePreview }: CodePreviewProp
             <div className="bg-gray-900 rounded p-3 border border-gray-800">
               <div className="text-xs font-semibold mb-2 text-gray-400">FILES</div>
               <div className="space-y-1 text-sm">
-                {project.files.map((file) => (
+                {project.files?.map((file) => (
                   <div key={file.path} className="hover:bg-gray-800 px-2 py-1 rounded cursor-pointer">
                     {file.type === 'file' ? (
                       <FileText className="h-4 w-4 inline-block mr-2" />
@@ -68,14 +68,10 @@ export default function CodePreview({ project, onClosePreview }: CodePreviewProp
 
             {/* Code editor */}
             <div className="bg-gray-900 rounded p-4 border border-gray-800 font-mono text-sm overflow-auto">
-              <MonacoEditor
-                language="typescript"
-                theme="vs-dark"
-                options={{
-                  minimap: { enabled: false },
-                  scrollBeyondLastLine: false,
-                }}
-                value={project.files.find((f) => f.name === 'index.tsx')?.content || ''}
+              <textarea
+                className="w-full h-full bg-gray-800 text-gray-300 font-mono p-4 rounded border border-gray-700 resize-none focus:outline-none focus:border-blue-500"
+                placeholder="Code editor - Monaco will be added later"
+                readOnly
               />
             </div>
           </div>

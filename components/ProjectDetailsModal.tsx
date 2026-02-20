@@ -15,7 +15,7 @@ interface ProjectDetailsModalProps {
 export default function ProjectDetailsModal({ project, isOpen, onClose, onDelete, onUpdate }: ProjectDetailsModalProps) {
   const [name, setName] = useState(project.name);
   const [description, setDescription] = useState(project.description || '');
-  const [priority, setPriority] = useState(project.priority);
+  const [priority, setPriority] = useState<Project['priority']>(project.priority);
   const [isEditing, setIsEditing] = useState(false);
 
   const handleSave = () => {
@@ -86,14 +86,14 @@ export default function ProjectDetailsModal({ project, isOpen, onClose, onDelete
             <label className="block text-sm mb-2">Priority</label>
             {isEditing ? (
               <div className="flex gap-4">
-                {['red', 'orange', 'blue', 'green'].map((color) => (
+                {(['red', 'orange', 'blue', 'green'] as const).map((color) => (
                   <label key={color} className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="radio"
                       name="priority"
                       value={color}
                       checked={priority === color}
-                      onChange={(e) => setPriority(e.target.value)}
+                      onChange={(e) => setPriority(e.target.value as Project['priority'])}
                       className="accent-current"
                     />
                     <span className={`h-4 w-4 rounded-full bg-${color}-500`}></span>
@@ -120,10 +120,6 @@ export default function ProjectDetailsModal({ project, isOpen, onClose, onDelete
                 <div className="font-mono text-sm">{project.gitUrl}</div>
               </div>
             )}
-            <div>
-              <label className="block text-sm mb-2">Preview URL</label>
-              <div className="font-mono text-sm">{project.previewUrl}</div>
-            </div>
           </div>
         </div>
       </div>

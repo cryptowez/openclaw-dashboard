@@ -6,48 +6,50 @@ import AppShell from '@/components/AppShell';
 import ImportGitModal from '@/components/ImportGitModal';
 import AICommandBox from '@/components/AICommandBox';
 import CodePreviewModal from '@/components/CodePreviewModal';
-
-interface Project {
-  id: string;
-  name: string;
-  status: 'active' | 'pending' | 'blocked' | 'completed';
-  lastAction: string;
-  updated: string;
-  priority: 'red' | 'orange' | 'blue' | 'green';
-}
+import ProjectDetailsModal from '@/components/ProjectDetailsModal';
+import { Project } from '@/types';
 
 const DEMO_PROJECTS: Project[] = [
   {
     id: 'alpha',
     name: 'Project Alpha',
+    description: 'A demo project showcasing the OpenClaw dashboard features.',
     status: 'active',
     lastAction: 'Deploy to production',
     updated: '2/20/2026, 6:30:00 AM',
     priority: 'red',
+    type: 'new',
   },
   {
     id: 'beta',
     name: 'Project Beta',
+    description: 'A project imported from GitHub for testing purposes.',
     status: 'pending',
     lastAction: 'Code review',
     updated: '2/20/2026, 6:15:00 AM',
     priority: 'orange',
+    type: 'git',
+    gitUrl: 'https://github.com/demo/beta',
   },
   {
     id: 'gamma',
     name: 'Project Gamma',
+    description: 'Another demo project with various features.',
     status: 'blocked',
     lastAction: 'Waiting for approval',
     updated: '2/20/2026, 6:00:00 AM',
     priority: 'blue',
+    type: 'new',
   },
   {
     id: 'delta',
     name: 'Project Delta',
+    description: 'A completed project with all features implemented.',
     status: 'completed',
     lastAction: 'Release v1.0.0',
     updated: '2/20/2026, 5:45:00 AM',
     priority: 'green',
+    type: 'new',
   },
 ];
 
@@ -56,15 +58,19 @@ export default function Home() {
   const [importOpen, setImportOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [codePreviewOpen, setCodePreviewOpen] = useState(false);
+  const [projectDetailsOpen, setProjectDetailsOpen] = useState(false);
 
   const handleImportProject = (repo: { owner: string; name: string }) => {
     const newProject: Project = {
       id: repo.name.toLowerCase(),
       name: repo.name,
+      description: null,
       status: 'pending',
       lastAction: 'Imported from GitHub',
       updated: new Date().toLocaleString(),
       priority: 'blue',
+      type: 'git',
+      gitUrl: `https://github.com/${repo.owner}/${repo.name}`,
     };
     setProjects([...projects, newProject]);
     setImportOpen(false);
@@ -75,23 +81,16 @@ export default function Home() {
     setCodePreviewOpen(true);
   };
 
-  const demoFiles = [
-    {
-      name: 'package.json',
-      language: 'json',
-      content: `{ "name": "${selectedProject?.name || 'project'}", "version": "1.0.0", "dependencies": { "react": "^18.2.0", "next": "^14.0.0" } }`,
-    },
-    {
-      name: 'app/page.tsx',
-      language: 'typescript',
-      content: `'use client'; import { useState } from 'react'; export default function Home() { const [count, setCount] = useState(0); return ( <div className="p-8"> <h1>Welcome to ${selectedProject?.name || 'your project'}</h1> <button onClick={() => setCount(count + 1)}> Count: {count} </button> </div> ); }`,
-    },
-    {
-      name: 'README.md',
-      language: 'markdown',
-      content: `# ${selectedProject?.name || 'Project'} This is your project dashboard. ## Features - AI-powered code generation - GitHub integration - Real-time collaboration ## Getting Started \`\`\`bash npm install npm run dev \`\`\``,
-    },
-  ];
+  const handleProjectDelete = (projectId: string) => {
+    setProjects(projects.filter(p => p.id !== projectId));
+    setProjectDetailsOpen(false);
+    setSelectedProject(null);
+  };
+
+  const handleProjectUpdate = (projectId: string, updatedProject: Partial<Project>) => {
+    setProjects(projects.map(p => p.id === projectId ? { ...p, ...updatedProject } : p));
+    setProjectDetailsOpen(false);
+  };
 
   return (
     <AppShell>
@@ -124,7 +123,7 @@ export default function Home() {
         {/* AI Command Box */}
         {selectedProject && (
           <div className="mb-6">
-            <AICommandBox projectName={selectedProject?.name || ''} onCommand={() => {}} />
+            <AICommandBox projectName={selectedProject.name} onCommand={() => {}} />
           </div>
         )}
 
@@ -202,13 +201,38 @@ export default function Home() {
         </div>
       </div>
 
-      <ImportGitModal isOpen={importOpen} onClose={() => setImportOpen(false)} />
+      <ImportGitModal isOpen={importOpen} onClose={() => setImportOpen(false)} onImport={handleImportProject} />
       <CodePreviewModal
         isOpen={codePreviewOpen}
         onClose={() => setCodePreviewOpen(false)}
         projectName={selectedProject?.name || 'Project'}
-        files={demoFiles}
+        files={[
+          {
+            name: 'package.json',
+            language: 'json',
+            content: `{ "name": "${selectedProject?.name || 'project'}", "version": "1.0.0", "dependencies": { "react": "^18.2.0", "next": "^14.0.0" } }`,
+          },
+          {
+            name: 'app/page.tsx',
+            language: 'typescript',
+            content: `'use client'; import { useState } from 'react'; export default function Home() { const [count, setCount] = useState(0); return ( <div className="p-8"> <h1>Welcome to ${selectedProject?.name || 'your project'}</h1> <button onClick={() => setCount(count + 1)}> Count: {count} </button> </div> ); }`,
+          },
+          {
+            name: 'README.md',
+            language: 'markdown',
+            content: `# ${selectedProject?.name || 'Project'} This is your project dashboard. ## Features - AI-powered code generation - GitHub integration - Real-time collaboration ## Getting Started \`\`\`bash npm install npm run dev \`\`\``,
+          },
+        ]}
       />
+      {selectedProject && (
+        <ProjectDetailsModal
+          project={selectedProject}
+          isOpen={projectDetailsOpen}
+          onClose={() => setProjectDetailsOpen(false)}
+          onDelete={handleProjectDelete}
+          onUpdate={handleProjectUpdate}
+        />
+      )}
     </AppShell>
   );
 }
