@@ -1,0 +1,184 @@
+{
+  "project": {
+    "name": "OpenClaw Dashboard",
+    "version": "1.0.0",
+    "description": "A Next.js-based dashboard for managing OpenClaw projects and AI interactions",
+    "repository": "https://github.com/cryptowez/openclaw-dashboard",
+    "license": "MIT"
+  },
+  "technical": {
+    "stack": {
+      "framework": {
+        "name": "Next.js",
+        "version": "14.2.35",
+        "features": [
+          "App Router",
+          "Server Components",
+          "API Routes",
+          "Static Site Generation"
+        ]
+      },
+      "languages": [
+        {
+          "name": "TypeScript",
+          "version": "5.0.0",
+          "usage": "All components and utilities"
+        }
+      ],
+      "styling": {
+        "name": "Tailwind CSS",
+        "version": "3.0.0",
+        "config": "tailwind.config.js"
+      },
+      "dependencies": {
+        "lucide-react": "Icons and UI elements",
+        "react-monaco-editor": "Code editor component",
+        "next": "^14.2.35",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0"
+      }
+    },
+    "architecture": {
+      "directories": {
+        "app": "Next.js app directory with routes and layouts",
+        "components": "Reusable React components",
+        "lib": "Utility functions and API clients",
+        "types": "TypeScript type definitions",
+        "public": "Static assets"
+      },
+      "components": {
+        "AICommandBox": {
+          "description": "AI command interface for project modifications",
+          "props": {
+            "projectName": "string",
+            "onCommand": "(command: string, response: string) => void"
+          }
+        },
+        "AppShell": {
+          "description": "Main application layout wrapper",
+          "props": {
+            "children": "React.ReactNode"
+          }
+        },
+        "CodePreviewModal": {
+          "description": "Modal for previewing project code",
+          "props": {
+            "isOpen": "boolean",
+            "onClose": "() => void",
+            "projectName": "string",
+            "files": "Array<{ name: string, language: string, content: string }>"
+          }
+        },
+        "ImportGitModal": {
+          "description": "Modal for importing GitHub repositories",
+          "props": {
+            "isOpen": "boolean",
+            "onClose": "() => void",
+            "onImport": "(repo: { owner: string, name: string }) => void"
+          }
+        },
+        "ProjectDetailsModal": {
+          "description": "Modal for viewing and editing project details",
+          "props": {
+            "project": "Project",
+            "isOpen": "boolean",
+            "onClose": "() => void",
+            "onDelete": "(projectId: string) => void",
+            "onUpdate": "(projectId: string, updatedProject: Partial<Project>) => void"
+          }
+        },
+        "Sidebar": {
+          "description": "Navigation sidebar with project list",
+          "props": {}
+        }
+      }
+    }
+  },
+  "api": {
+    "endpoints": {
+      "/api/ai-command": {
+        "method": "POST",
+        "description": "Send commands to AI for project modifications",
+        "request": {
+          "body": {
+            "model": "string (haiku | sonnet)",
+            "prompt": "string",
+            "projectName": "string"
+          }
+        },
+        "response": {
+          "content": "string",
+          "tokensUsed": "number"
+        }
+      },
+      "/api/projects": {
+        "method": "GET",
+        "description": "Get list of projects",
+        "response": {
+          "projects": "Project[]"
+        }
+      }
+    }
+  },
+  "types": {
+    "Project": {
+      "id": "string",
+      "name": "string",
+      "description": "string | null",
+      "status": "'active' | 'pending' | 'blocked' | 'completed'",
+      "lastAction": "string",
+      "updated": "string",
+      "priority": "'red' | 'orange' | 'blue' | 'green'",
+      "type": "'new' | 'git'",
+      "gitUrl": "string | undefined",
+      "files": "Array<{ name: string, path: string, type: 'file' | 'directory', content?: string }> | undefined",
+      "previewUrl": "string | undefined"
+    }
+  },
+  "deployment": {
+    "platform": "Vercel",
+    "configuration": {
+      "build": {
+        "command": "next build",
+        "output": ".next"
+      },
+      "environment": {
+        "OPENROUTER_API_KEY": {
+          "description": "OpenRouter API key for AI commands",
+          "required": true
+        }
+      }
+    },
+    "steps": [
+      "Push code to GitHub repository",
+      "Connect repository to Vercel",
+      "Configure environment variables",
+      "Deploy with 'vercel deploy --prod'"
+    ]
+  },
+  "development": {
+    "requirements": {
+      "node": ">=18.0.0",
+      "npm": ">=8.0.0"
+    },
+    "setup": {
+      "steps": [
+        "Clone repository",
+        "Install dependencies with 'npm install'",
+        "Create .env.local with required environment variables",
+        "Run development server with 'npm run dev'"
+      ]
+    },
+    "scripts": {
+      "dev": "Start development server",
+      "build": "Create production build",
+      "start": "Start production server",
+      "lint": "Run ESLint"
+    },
+    "environment": {
+      "development": {
+        "OPENROUTER_API_KEY": "Your OpenRouter API key"
+      }
+    }
+  }
+}
