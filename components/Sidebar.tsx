@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import Link from 'next/link';
 import { Folder, Plus, Database } from 'lucide-react';
 import { projects } from '../lib/mock';
@@ -9,6 +10,10 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ selectedPriority, onSelectPriority }: SidebarProps) {
+  const [showAddMenu, setShowAddMenu] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
+
   return (
     <div className="w-64 bg-gray-900 h-screen p-4 flex flex-col">
       <div className="flex items-center gap-2 mb-8">
@@ -19,9 +24,21 @@ export default function Sidebar({ selectedPriority, onSelectPriority }: SidebarP
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold">Projects</h2>
-          <button className="p-2 hover:bg-gray-800 rounded">
-            <Plus className="h-4 w-4" />
-          </button>
+          <div className="relative">
+            <button onClick={() => setShowAddMenu(!showAddMenu)} className="p-2 hover:bg-gray-800 rounded">
+              <Plus className="h-4 w-4" />
+            </button>
+            {showAddMenu && (
+              <div className="absolute right-0 mt-2 w-48 bg-gray-900 border border-gray-700 rounded-lg shadow-xl z-50">
+                <button onClick={() => { setShowCreateModal(true); setShowAddMenu(false); }} className="w-full px-4 py-2 text-left hover:bg-gray-800 flex items-center gap-2 rounded-t-lg">
+                  <Plus className="h-4 w-4" /> New Project
+                </button>
+                <button onClick={() => { setShowImportModal(true); setShowAddMenu(false); }} className="w-full px-4 py-2 text-left hover:bg-gray-800 flex items-center gap-2 rounded-b-lg">
+                  <span>🔗</span> Import from GitHub
+                </button>
+              </div>
+            )}
+          </div>
         </div>
         <div className="space-y-2">
           {projects.map((project) => (
