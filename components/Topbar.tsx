@@ -4,7 +4,7 @@ import { Copy } from 'lucide-react';
 
 export default function Topbar() {
   const vercelUrl = process.env.NEXT_PUBLIC_VERCEL_URL || process.env.VERCEL_URL || 'https://openclaw-dashboard-ioniq-ai.vercel.app/';
-  const previewUrl = `https://${vercelUrl}`;
+  const previewUrl = vercelUrl;
   
   const copyToClipboard = async () => {
     try {
