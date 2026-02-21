@@ -3,10 +3,9 @@ export const OPENROUTER_MODELS = {
   SONNET: 'anthropic/claude-3.5-sonnet',
 } as const;
 
-// Lijst van complexe taken die Sonnet vereisen
 const COMPLEX_TASKS = [
   'refactor',
-  'architecture',
+  'architecture', 
   'security',
   'optimization'
 ];
@@ -18,7 +17,7 @@ export const getModelForEnvironment = (prompt: string) => {
   }
 
   // Productie: check op complexe taken
-  const needsSonnet = COMPLEX_TASKS.some(task => 
+  const needsSonnet = COMPLEX_TASKS.some(task =>
     prompt.toLowerCase().includes(task)
   );
 
@@ -27,31 +26,37 @@ export const getModelForEnvironment = (prompt: string) => {
 
 export const callOpenRouter = async (
   prompt: string,
-  maxTokens: number = 500  // Verlaagd van 1000
+  maxTokens: number = 500
 ) => {
   const selectedModel = getModelForEnvironment(prompt);
   
-  const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-    },
-    body: JSON.stringify({
+  try {
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: selectedModel,
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: maxTokens,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(`OpenRouter API error: ${error.message}`);
+    }
+
+    const data = await response.json();
+    return {
+      content: data.choices[0].message.content,
       model: selectedModel,
-      messages: [{ role: 'user', content: prompt }],
-      max_tokens: maxTokens,
-    }),
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to call OpenRouter API');
+      tokens: data.usage?.total_tokens || 0
+    };
+  } catch (error) {
+    console.error('OpenRouter API error:', error);
+    throw error;
   }
-
-  const data = await response.json();
-  return {
-    content: data.choices[0].message.content,
-    model: selectedModel,
-    tokens: data.usage?.total_tokens || 0
-  };
 };
