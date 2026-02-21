@@ -1,64 +1,79 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { getOrFetch, clearExpiredCache } from '@/lib/cache';
-import { callOpenRouter } from '@/lib/openrouter';
+import React, { useState } from 'react';
+import { Send } from 'lucide-react';
+import { ModelKey, DEFAULT_MODEL } from '@/lib/openrouter';
+import ModelSelector from './ModelSelector';
 
 interface AICommandBoxProps {
   projectName: string;
   onCommand: (command: string, response: string) => void;
 }
 
-const CACHE_TTL = '15m';
-const BATCH_DELAY = 2000;
-
 export const AICommandBox: React.FC<AICommandBoxProps> = ({ projectName, onCommand }) => {
-  const [commands, setCommands] = useState<string[]>([]);
+  const [command, setCommand] = useState('');
+  const [model, setModel] = useState<ModelKey>(DEFAULT_MODEL);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const batchTimer = setTimeout(async () => {
-      if (commands.length === 0) return;
-      
-      setIsLoading(true);
-      try {
-        const cacheKey = `${projectName}:${commands.join('+')}`;
-        const { content, tokens } = await getOrFetch(cacheKey, async () => {
-          const response = await callOpenRouter(`Update for ${projectName}: ${commands.join(' + ')}`, 500);
-          return response;
-        }, CACHE_TTL);
-        
-        onCommand(commands.join(' + '), content);
-        setCommands([]);
-        console.log(`Tokens used: ${tokens}`);
-      } finally {
-        setIsLoading(false);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!command.trim() || isLoading) return;
+
+    setIsLoading(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/ai-command', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ projectName, command, model }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error ?? 'Request failed');
       }
-    }, BATCH_DELAY);
 
-    return () => clearTimeout(batchTimer);
-  }, [projectName, commands, onCommand]);
-
-  const handleCommandInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setCommands(e.target.value.split('\n'));
-    clearExpiredCache();
+      const data = await res.json();
+      onCommand(command, data.result);
+      setCommand('');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
-      <textarea
-        className="w-full bg-gray-800 border border-gray-700 rounded p-2"
-        placeholder="Enter commands..."
-        onChange={handleCommandInput}
-        disabled={isLoading}
-      />
-      <button
-        onClick={() => {}} // No need to call manually
-        disabled={isLoading || commands.length === 0}
-        className="mt-2 px-4 py-2 bg-blue-600 rounded"
-      >
-        {isLoading ? 'Processing...' : 'Execute'}
-      </button>
+    <div className="bg-gray-900 border border-gray-700 rounded-lg p-4 space-y-3">
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-medium text-gray-300">AI Command — {projectName}</span>
+        <ModelSelector value={model} onChange={setModel} disabled={isLoading} />
+      </div>
+      <form onSubmit={handleSubmit} className="flex gap-2">
+        <textarea
+          className="flex-1 bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm resize-none focus:outline-none focus:border-blue-500"
+          placeholder="Describe what you want to build or change…"
+          rows={3}
+          value={command}
+          onChange={(e) => setCommand(e.target.value)}
+          disabled={isLoading}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleSubmit(e as any);
+          }}
+        />
+        <button
+          type="submit"
+          disabled={isLoading || !command.trim()}
+          className="self-end px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700 rounded flex items-center gap-2 text-sm"
+        >
+          <Send className="h-4 w-4" />
+          {isLoading ? 'Working…' : 'Send'}
+        </button>
+      </form>
+      {error && <p className="text-xs text-red-400">{error}</p>}
     </div>
   );
 };
+
+export default AICommandBox;

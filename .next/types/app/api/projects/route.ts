@@ -1,4 +1,4 @@
-// File: /Users/wez/.openclaw/workspace/projects/openclaw-dashboard/app/api/projects/route.ts
+// File: /home/runner/work/openclaw-dashboard/openclaw-dashboard/app/api/projects/route.ts
 import * as entry from '../../../../../app/api/projects/route.js'
 import type { NextRequest } from 'next/server.js'
 

@@ -9,11 +9,12 @@ export const useAICommand = (projectName: string) => {
     setIsLoading(true);
     try {
       const result = await callOpenRouter(
-        'haiku', // Use faster, smaller model by default
-        `Project: ${projectName}. Task: ${command}`,
-        500 // Strict token limit
+        'claude-3-haiku',
+        `You are a coding assistant helping with the "${projectName}" project. Be concise.`,
+        command,
+        500,
       );
-      setResponse(result);
+      setResponse(result.content);
     } finally {
       setIsLoading(false);
     }
