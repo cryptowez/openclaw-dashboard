@@ -1,91 +1,68 @@
 'use client';
 
-import { useState } from 'react';
-import { Folders, Settings, Plus, X, Import } from 'lucide-react';
-import ImportGitModal from './ImportGitModal';
+import { Settings, Plus, GitBranch, Folder } from 'lucide-react';
+import { Project } from '@/types';
 
-export default function Sidebar() {
-  const [showImportModal, setShowImportModal] = useState(false);
+interface SidebarProps {
+  projects: Project[];
+  selectedId: string | null;
+  onSelectProject: (id: string) => void;
+  onImport: () => void;
+  onNew: () => void;
+}
 
-  const handleImport = (repo: { owner: string; name: string }) => {
-    // Handle import logic here
-    console.log('Importing repository:', repo);
-    setShowImportModal(false);
-  };
-
+export default function Sidebar({
+  projects,
+  selectedId,
+  onSelectProject,
+  onImport,
+  onNew,
+}: SidebarProps) {
   return (
-    <aside className="w-64 bg-gray-900 border-r border-gray-800 flex flex-col">
-      {/* Top Section */}
-      <div className="p-4 border-b border-gray-800">
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-xl font-bold">OpenClaw</h1>
-          <button className="p-2 hover:bg-gray-800 rounded">
-            <Settings className="h-5 w-5" />
-          </button>
-        </div>
-        <div className="flex gap-2">
+    <aside className="w-60 bg-gray-900 border-r border-gray-800 flex flex-col h-full shrink-0">
+      {/* Header */}
+      <div className="px-4 py-3 border-b border-gray-800 flex items-center justify-between">
+        <span className="font-bold text-white">OpenClaw</span>
+        <button title="Settings">
+          <Settings className="h-4 w-4 text-gray-400" />
+        </button>
+      </div>
+
+      {/* Actions */}
+      <div className="px-3 py-2 flex gap-2 border-b border-gray-800">
+        <button
+          onClick={onImport}
+          className="flex-1 bg-gray-800 hover:bg-gray-700 text-xs py-1.5 rounded flex items-center justify-center gap-1"
+        >
+          <GitBranch className="h-3 w-3" /> Import
+        </button>
+        <button
+          onClick={onNew}
+          className="flex-1 bg-blue-600 hover:bg-blue-700 text-xs py-1.5 rounded flex items-center justify-center gap-1"
+        >
+          <Plus className="h-3 w-3" /> New
+        </button>
+      </div>
+
+      {/* Projects list */}
+      <div className="flex-1 overflow-y-auto py-2">
+        <p className="px-3 py-1 text-xs text-gray-500 uppercase tracking-wider">Projects</p>
+        {projects.map((p) => (
           <button
-            onClick={() => setShowImportModal(true)}
-            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded flex items-center justify-center gap-2"
+            key={p.id}
+            onClick={() => onSelectProject(p.id)}
+            className={`w-full text-left px-3 py-1.5 text-sm flex items-center gap-2 hover:bg-gray-800 ${
+              selectedId === p.id ? 'bg-gray-800 text-white' : 'text-gray-400'
+            }`}
           >
-            <Import className="h-4 w-4" />
-            Import
+            <Folder className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">{p.name}</span>
+            {p.type === 'git' && (
+              <GitBranch className="h-3 w-3 ml-auto text-gray-600 shrink-0" />
+            )}
           </button>
-          <button className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded flex items-center justify-center gap-2">
-            <Plus className="h-4 w-4" />
-            New
-          </button>
-        </div>
+        ))}
       </div>
-
-      {/* Projects List */}
-      <div className="flex-1 overflow-auto">
-        <div className="p-4">
-          <h2 className="text-sm font-semibold text-gray-400 mb-2">PROJECTS</h2>
-          <nav className="space-y-1">
-            <a
-              href="#"
-              className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-800 bg-gray-800 text-white"
-            >
-              <Folders className="h-4 w-4" />
-              Project Alpha
-            </a>
-            <a
-              href="#"
-              className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-800 text-gray-400"
-            >
-              <Folders className="h-4 w-4" />
-              Project Beta
-            </a>
-            <a
-              href="#"
-              className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-800 text-gray-400"
-            >
-              <Folders className="h-4 w-4" />
-              Project Gamma
-            </a>
-          </nav>
-        </div>
-      </div>
-
-      {/* Footer */}
-      <div className="p-4 border-t border-gray-800">
-        <div className="flex items-center gap-3">
-          <div className="h-8 w-8 rounded-full bg-gray-800" />
-          <div>
-            <div className="text-sm font-medium">User Name</div>
-            <div className="text-xs text-gray-400">user@example.com</div>
-          </div>
-        </div>
-      </div>
-
-      {showImportModal && (
-        <ImportGitModal
-          isOpen={showImportModal}
-          onClose={() => setShowImportModal(false)}
-          onImport={handleImport}
-        />
-      )}
     </aside>
   );
 }
