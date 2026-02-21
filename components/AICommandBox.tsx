@@ -1,7 +1,7 @@
 'use client';
 
-import React from 'react';
-import { getOrFetch } from '@/lib/cache';
+import React, { useState, useEffect } from 'react';
+import { getOrFetch, clearExpiredCache } from '@/lib/cache';
 import { callOpenRouter } from '@/lib/openrouter';
 
 interface AICommandBoxProps {
@@ -9,24 +9,39 @@ interface AICommandBoxProps {
   onCommand: (command: string, response: string) => void;
 }
 
-export const AICommandBox: React.FC<AICommandBoxProps> = ({ projectName, onCommand }) => {
-  const [commands, setCommands] = React.useState<string[]>([]);
-  const [isLoading, setIsLoading] = React.useState(false);
+const CACHE_TTL = '15m';
+const BATCH_DELAY = 2000;
 
-  const batchCommands = async () => {
-    if (commands.length === 0) return;
-    
-    setIsLoading(true);
-    try {
-      const cacheKey = `${projectName}:${commands.join('+')}`;
-      const response = await getOrFetch(cacheKey, () => 
-        callOpenRouter('simple', `Update for ${projectName}: ${commands.join(' + ')}`, 500)
-      );
-      onCommand(commands.join(' + '), response);
-      setCommands([]);
-    } finally {
-      setIsLoading(false);
-    }
+export const AICommandBox: React.FC<AICommandBoxProps> = ({ projectName, onCommand }) => {
+  const [commands, setCommands] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const batchTimer = setTimeout(async () => {
+      if (commands.length === 0) return;
+      
+      setIsLoading(true);
+      try {
+        const cacheKey = `${projectName}:${commands.join('+')}`;
+        const { content, tokens } = await getOrFetch(cacheKey, async () => {
+          const response = await callOpenRouter(`Update for ${projectName}: ${commands.join(' + ')}`, 500);
+          return response;
+        }, CACHE_TTL);
+        
+        onCommand(commands.join(' + '), content);
+        setCommands([]);
+        console.log(`Tokens used: ${tokens}`);
+      } finally {
+        setIsLoading(false);
+      }
+    }, BATCH_DELAY);
+
+    return () => clearTimeout(batchTimer);
+  }, [projectName, commands, onCommand]);
+
+  const handleCommandInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setCommands(e.target.value.split('\n'));
+    clearExpiredCache();
   };
 
   return (
@@ -34,11 +49,11 @@ export const AICommandBox: React.FC<AICommandBoxProps> = ({ projectName, onComma
       <textarea
         className="w-full bg-gray-800 border border-gray-700 rounded p-2"
         placeholder="Enter commands..."
-        onChange={(e) => setCommands(e.target.value.split('\n'))}
+        onChange={handleCommandInput}
         disabled={isLoading}
       />
       <button
-        onClick={batchCommands}
+        onClick={() => {}} // No need to call manually
         disabled={isLoading || commands.length === 0}
         className="mt-2 px-4 py-2 bg-blue-600 rounded"
       >
