@@ -1,12 +1,33 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { Plus } from 'lucide-react';
-import ImportGitModal from '@/components/ImportGitModal';
-import AICommandBox from '@/components/AICommandBox';
-import CodePreviewModal from '@/components/CodePreviewModal';
-import ProjectDetailsModal from '@/components/ProjectDetailsModal';
 import { Project } from '@/types';
+
+// Lazy loaded components
+const AICommandBox = dynamic(() => import('@/components/AICommandBox'), {
+  loading: () => <div>Loading AI...</div>,
+  ssr: false // Disable server-side rendering for AI components
+});
+
+const CodePreviewModal = dynamic(() => import('@/components/CodePreviewModal'));
+const ProjectDetailsModal = dynamic(() => import('@/components/ProjectDetailsModal'));
+const ImportGitModal = dynamic(() => import('@/components/ImportGitModal'));
+
+// Optimized project creation
+type ImportRepo = { owner: string; name: string };
+const createProject = ({ owner, name }: ImportRepo): Project => ({
+  id: name.toLowerCase(),
+  name,
+  description: null,
+  status: 'pending',
+  lastAction: 'Imported', // Shorter text
+  updated: new Date().toLocaleString(),
+  priority: 'blue',
+  type: 'git',
+  gitUrl: `https://github.com/${owner}/${name}`,
+});
 
 const DEMO_PROJECTS: Project[] = [
   {
@@ -30,60 +51,34 @@ const DEMO_PROJECTS: Project[] = [
     type: 'git',
     gitUrl: 'https://github.com/demo/beta',
   },
-  {
-    id: 'gamma',
-    name: 'Project Gamma',
-    description: 'Another demo project with various features.',
-    status: 'blocked',
-    lastAction: 'Waiting for approval',
-    updated: '2/20/2026, 6:00:00 AM',
-    priority: 'blue',
-    type: 'new',
-  },
-  {
-    id: 'delta',
-    name: 'Project Delta',
-    description: 'A completed project with all features implemented.',
-    status: 'completed',
-    lastAction: 'Release v1.0.0',
-    updated: '2/20/2026, 5:45:00 AM',
-    priority: 'green',
-    type: 'new',
-  },
 ];
 
 export default function Home() {
+  // Efficient state management
   const [projects, setProjects] = useState<Project[]>(DEMO_PROJECTS);
   const [importOpen, setImportOpen] = useState(false);
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [codePreviewOpen, setCodePreviewOpen] = useState(false);
   const [projectDetailsOpen, setProjectDetailsOpen] = useState(false);
 
-  const handleImportProject = (repo: { owner: string; name: string }) => {
-    const newProject: Project = {
-      id: repo.name.toLowerCase(),
-      name: repo.name,
-      description: null,
-      status: 'pending',
-      lastAction: 'Imported from GitHub',
-      updated: new Date().toLocaleString(),
-      priority: 'blue',
-      type: 'git',
-      gitUrl: `https://github.com/${repo.owner}/${repo.name}`,
-    };
+  // Get selected project using ID
+  const selectedProject = projects.find(p => p.id === selectedProjectId);
+
+  const handleImportProject = (repo: ImportRepo) => {
+    const newProject = createProject(repo);
     setProjects([...projects, newProject]);
     setImportOpen(false);
   };
 
   const handleProjectClick = (project: Project) => {
-    setSelectedProject(project);
+    setSelectedProjectId(project.id);
     setCodePreviewOpen(true);
   };
 
   const handleProjectDelete = (projectId: string) => {
     setProjects(projects.filter(p => p.id !== projectId));
     setProjectDetailsOpen(false);
-    setSelectedProject(null);
+    setSelectedProjectId(null);
   };
 
   const handleProjectUpdate = (projectId: string, updatedProject: Partial<Project>) => {
@@ -155,80 +150,41 @@ export default function Home() {
         ))}
       </div>
 
-      {/* Master Log */}
-      <div className="bg-gray-900 border border-gray-700 rounded-lg p-6">
-        <h3 className="text-xl font-semibold mb-4">Master Log</h3>
-        <div className="space-y-3">
-          {[
-            {
-              time: '2/20/2026, 6:30:00 AM',
-              bot: 'deployment-bot',
-              action: 'deploy',
-              message: 'Production deployment completed',
-              color: 'bg-red-500',
-            },
-            {
-              time: '2/20/2026, 6:15:00 AM',
-              bot: 'code-review-bot',
-              action: 'review',
-              message: 'Code review requested',
-              color: 'bg-orange-500',
-            },
-            {
-              time: '2/20/2026, 6:00:00 AM',
-              bot: 'approval-bot',
-              action: 'approval',
-              message: 'Waiting for manager approval',
-              color: 'bg-blue-500',
-            },
-          ].map((log, idx) => (
-            <div key={idx} className="flex gap-3 items-start">
-              <div className={`w-3 h-3 rounded-full ${log.color} mt-1.5 flex-shrink-0`} />
-              <div className="flex-1">
-                <p className="text-sm text-gray-400">{log.time}</p>
-                <p className="text-white text-sm">
-                  <span className="text-gray-500">• {log.bot}</span>
-                  <span className="text-gray-400 mx-2">•</span>
-                  <span className="text-gray-500">{log.action}</span>
-                </p>
-                <p className="text-white text-sm font-medium">{log.message}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <ImportGitModal isOpen={importOpen} onClose={() => setImportOpen(false)} onImport={handleImportProject} />
-      <CodePreviewModal
-        isOpen={codePreviewOpen}
-        onClose={() => setCodePreviewOpen(false)}
-        projectName={selectedProject?.name || 'Project'}
-        files={[
-          {
-            name: 'package.json',
-            language: 'json',
-            content: `{ "name": "${selectedProject?.name || 'project'}", "version": "1.0.0", "dependencies": { "react": "^18.2.0", "next": "^14.0.0" } }`,
-          },
-          {
-            name: 'app/page.tsx',
-            language: 'typescript',
-            content: `'use client'; import { useState } from 'react'; export default function Home() { const [count, setCount] = useState(0); return ( <div className="p-8"> <h1>Welcome to ${selectedProject?.name || 'your project'}</h1> <button onClick={() => setCount(count + 1)}> Count: {count} </button> </div> ); }`,
-          },
-          {
-            name: 'README.md',
-            language: 'markdown',
-            content: `# ${selectedProject?.name || 'Project'} This is your project dashboard. ## Features - AI-powered code generation - GitHub integration - Real-time collaboration ## Getting Started \`\`\`bash npm install npm run dev \`\`\``,
-          },
-        ]}
+      {/* Modals */}
+      <ImportGitModal 
+        isOpen={importOpen} 
+        onClose={() => setImportOpen(false)} 
+        onImport={handleImportProject} 
       />
+      
       {selectedProject && (
-        <ProjectDetailsModal
-          project={selectedProject}
-          isOpen={projectDetailsOpen}
-          onClose={() => setProjectDetailsOpen(false)}
-          onDelete={handleProjectDelete}
-          onUpdate={handleProjectUpdate}
-        />
+        <>
+          <CodePreviewModal
+            isOpen={codePreviewOpen}
+            onClose={() => setCodePreviewOpen(false)}
+            projectName={selectedProject.name}
+            files={[
+              {
+                name: 'package.json',
+                language: 'json',
+                content: `{ "name": "${selectedProject.name}", "version": "1.0.0" }`,
+              },
+              {
+                name: 'README.md',
+                language: 'markdown',
+                content: `# ${selectedProject.name}\nProject dashboard`,
+              },
+            ]}
+          />
+          
+          <ProjectDetailsModal
+            project={selectedProject}
+            isOpen={projectDetailsOpen}
+            onClose={() => setProjectDetailsOpen(false)}
+            onDelete={handleProjectDelete}
+            onUpdate={handleProjectUpdate}
+          />
+        </>
       )}
     </div>
   );

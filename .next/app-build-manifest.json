@@ -13,16 +13,14 @@
       "static/chunks/117-6eeb5afb19415e72.js",
       "static/chunks/main-app-4d67e2d45f980699.js",
       "static/css/edc89b519cbc637c.css",
-      "static/chunks/986-540d55851225e8ce.js",
-      "static/chunks/app/layout-a7540db2bc603a4a.js"
+      "static/chunks/app/layout-1c38690f734f8f2c.js"
     ],
     "/page": [
       "static/chunks/webpack-b10e1bf7a5faa37c.js",
       "static/chunks/fd9d1056-357a9aa7cf7b0906.js",
       "static/chunks/117-6eeb5afb19415e72.js",
       "static/chunks/main-app-4d67e2d45f980699.js",
-      "static/chunks/986-540d55851225e8ce.js",
-      "static/chunks/app/page-da207e85472de333.js"
+      "static/chunks/app/page-1cd6681dd7065a65.js"
     ],
     "/projects/[slug]/page": [
       "static/chunks/webpack-b10e1bf7a5faa37c.js",
