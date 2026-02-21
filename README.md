@@ -1,23 +1,23 @@
 # OpenClaw Dashboard
 
-A Next.js-based dashboard for managing OpenClaw projects and AI interactions.
+A personal AI coding assistant dashboard — a self-hosted alternative to Emergent / Bolt.
 
 ## Features
 
-- Project management with status tracking
-- AI command interface for project modifications
-- GitHub repository import
-- Code preview with syntax highlighting
-- Real-time deployment status
-- Master log view
+- **AI Command Interface** — send prompts to any model via OpenRouter; see responses inline
+- **Model Selection** — choose from fast (Haiku, GPT-4o-mini, Gemini Flash), balanced (Claude 3.5 Sonnet, GPT-4o), or powerful (Claude 3 Opus, o3-mini, DeepSeek R1) models per task
+- **Git Pull / Push** — fetch a GitHub repo's file tree and push single-file commits directly via the GitHub API, no local git required
+- **Project management** — create, import, and track projects with status and priority labels
+- **Code preview** — browse and copy project files in a modal code viewer
 
 ## Tech Stack
 
-- Next.js 14
+- Next.js 14 (App Router)
 - TypeScript
 - Tailwind CSS
 - Lucide Icons
-- Vercel (deployment)
+- OpenRouter (multi-model AI)
+- GitHub REST API (git operations)
 
 ## Development
 
@@ -35,46 +35,56 @@ npm run build
 npm start
 ```
 
-## Deployment
-
-The application is designed to be deployed on Vercel. You can deploy it using:
-
-1. Vercel Web Interface:
-   - Visit https://vercel.com/new
-   - Import your GitHub repository
-   - Follow the deployment steps
-
-2. Vercel CLI:
-   ```bash
-   vercel login
-   vercel deploy --prod
-   ```
-
 ## Environment Variables
 
+Create a `.env.local` file with:
+
 ```env
-OPENROUTER_API_KEY=your_api_key_here
+# Required — get a free key at https://openrouter.ai
+OPENROUTER_API_KEY=your_openrouter_api_key_here
+
+# Required for git pull/push operations
+# Create a Personal Access Token at https://github.com/settings/tokens
+# Scopes needed: repo (or public_repo for public repos)
+GITHUB_TOKEN=your_github_personal_access_token_here
+
+NEXT_PUBLIC_API_URL=http://localhost:3000
+```
+
+## Deployment
+
+The application can be deployed to any Node.js-capable host.
+
+### Vercel (recommended)
+1. Visit https://vercel.com/new and import your GitHub repository
+2. Add the environment variables above in the Vercel project settings
+3. Deploy
+
+### Other hosts (Railway, Render, Fly.io, VPS, etc.)
+```bash
+npm run build
+npm start
 ```
 
 ## Project Structure
 
 ```
-├── app/                # Next.js app directory
-│   ├── api/           # API routes
-│   ├── layout.tsx     # Root layout
-│   └── page.tsx       # Home page
-├── components/        # React components
-├── lib/              # Utility functions
-├── public/           # Static assets
-└── types/            # TypeScript type definitions
+├── app/
+│   ├── api/
+│   │   ├── ai-command/route.ts   # OpenRouter AI proxy
+│   │   └── git/route.ts          # GitHub API pull/push
+│   ├── layout.tsx
+│   └── page.tsx
+├── components/
+│   ├── AICommandBox.tsx          # AI chat with model selector
+│   ├── GitOpsPanel.tsx           # Pull/push UI
+│   ├── ModelSelector.tsx         # Model dropdown
+│   └── …
+├── lib/
+│   ├── openrouter.ts             # OpenRouter client + model list
+│   └── …
+└── types/
 ```
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
 
 ## License
 

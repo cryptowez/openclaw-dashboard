@@ -21,8 +21,13 @@ export const debounce = <F extends (...args: any[]) => any>(
 
 export const debouncedAICall = debounce(
   async (input: string, callback: (result: string) => void) => {
-    const result = await callOpenRouter('haiku', input, 300);
-    callback(result);
+    const result = await callOpenRouter(
+      'claude-3-haiku',
+      'You are a helpful coding assistant. Be concise.',
+      input,
+      300,
+    );
+    callback(result.content);
   },
-  1000 // Wait 1 second before making AI call
+  1000, // Wait 1 second before making AI call
 );
