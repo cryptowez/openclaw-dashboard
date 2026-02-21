@@ -1,5 +1,4 @@
 import './globals.css'
-import AppShell from '../components/AppShell'
 
 export const metadata = {
   title: 'OpenClaw Dashboard',
@@ -12,11 +11,12 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body style={{ fontFamily: 'Inter, ui-sans-serif, system-ui, sans-serif' }}>
-        <AppShell>
-          {children}
-        </AppShell>
+    <html lang="en" className="h-screen overflow-hidden">
+      <body
+        className="h-screen overflow-hidden"
+        style={{ fontFamily: 'Inter, ui-sans-serif, system-ui, sans-serif' }}
+      >
+        {children}
       </body>
     </html>
   )
