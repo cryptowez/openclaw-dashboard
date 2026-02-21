@@ -3,19 +3,19 @@ export const OPENROUTER_MODELS = {
   SONNET: 'anthropic/claude-3.5-sonnet',
 } as const;
 
-export const getModelForEnvironment = () => {
-  if (process.env.NODE_ENV === 'development') {
-    return OPENROUTER_MODELS.HAIKU; // Faster, cheaper model for development
+export const getModelForEnvironment = (complexity: 'simple' | 'complex' = 'simple') => {
+  if (process.env.NODE_ENV === 'development' || complexity === 'simple') {
+    return OPENROUTER_MODELS.HAIKU;
   }
-  return OPENROUTER_MODELS.SONNET; // Full model for production
+  return OPENROUTER_MODELS.SONNET;
 };
 
 export const callOpenRouter = async (
-  model: keyof typeof OPENROUTER_MODELS,
+  complexity: 'simple' | 'complex',
   prompt: string,
   maxTokens: number = 1000
 ) => {
-  const selectedModel = getModelForEnvironment();
+  const selectedModel = getModelForEnvironment(complexity);
   
   const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',

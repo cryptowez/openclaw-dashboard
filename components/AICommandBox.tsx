@@ -1,29 +1,29 @@
-// Updated AICommandBox.tsx
+'use client';
 
 import React from 'react';
+import { getOrFetch } from '@/lib/cache';
+import { callOpenRouter } from '@/lib/openrouter';
 
 interface AICommandBoxProps {
   projectName: string;
   onCommand: (command: string, response: string) => void;
 }
 
-const AICommandBox: React.FC<AICommandBoxProps> = ({ projectName, onCommand }) => {
-  const [selectedModel, setSelectedModel] = React.useState<string>('');
-  const [input, setInput] = React.useState<string>('');
-  const [isLoading, setIsLoading] = React.useState<boolean>(false);
+export const AICommandBox: React.FC<AICommandBoxProps> = ({ projectName, onCommand }) => {
+  const [commands, setCommands] = React.useState<string[]>([]);
+  const [isLoading, setIsLoading] = React.useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim()) return;
-
+  const batchCommands = async () => {
+    if (commands.length === 0) return;
+    
     setIsLoading(true);
     try {
-      const response = await fetch('https://api.example.com/data');
-      const data = await response.json();
-      onCommand(input, data);
-      setInput('');
-    } catch (error) {
-      console.error('Error fetching data:', error);
+      const cacheKey = `${projectName}:${commands.join('+')}`;
+      const response = await getOrFetch(cacheKey, () => 
+        callOpenRouter('simple', `Update for ${projectName}: ${commands.join(' + ')}`, 500)
+      );
+      onCommand(commands.join(' + '), response);
+      setCommands([]);
     } finally {
       setIsLoading(false);
     }
@@ -31,36 +31,19 @@ const AICommandBox: React.FC<AICommandBoxProps> = ({ projectName, onCommand }) =
 
   return (
     <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
-      <div className="flex gap-2 mb-3">
-        <label className="text-sm text-gray-400">Model:</label>
-        <select
-          value={selectedModel}
-          onChange={(e) => setSelectedModel(e.target.value)}
-          className="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-sm text-white"
-        >
-          <option value="model1">Model 1</option>
-          <option value="model2">Model 2</option>
-        </select>
-      </div>
-      <form onSubmit={handleSubmit} className="flex gap-2">
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder={`Talk to AI for ${projectName}... (e.g., "Add dark mode", "Refactor this component")`}
-          className="flex-1 bg-gray-800 border border-gray-700 rounded px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
-          disabled={isLoading}
-        />
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="px-4 py-2 bg-blue-600 rounded hover:bg-blue-700 disabled:bg-gray-700"
-        >
-          {isLoading ? 'Loading...' : 'Send'}
-        </button>
-      </form>
+      <textarea
+        className="w-full bg-gray-800 border border-gray-700 rounded p-2"
+        placeholder="Enter commands..."
+        onChange={(e) => setCommands(e.target.value.split('\n'))}
+        disabled={isLoading}
+      />
+      <button
+        onClick={batchCommands}
+        disabled={isLoading || commands.length === 0}
+        className="mt-2 px-4 py-2 bg-blue-600 rounded"
+      >
+        {isLoading ? 'Processing...' : 'Execute'}
+      </button>
     </div>
   );
 };
-
-export default AICommandBox;
