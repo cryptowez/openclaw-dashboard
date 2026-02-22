@@ -29,15 +29,17 @@ export const callOpenRouter = async (
   model: string,
   systemPrompt: string,
   userMessage: string,
-  maxTokens: number = 2000
+  maxTokens: number = 2000,
+  apiKey?: string
 ) => {
   const resolvedModel = OPENROUTER_MODELS[model] ?? model;
+  const key = apiKey || process.env.OPENROUTER_API_KEY;
 
   const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+      'Authorization': `Bearer ${key}`,
       'HTTP-Referer': 'https://github.com/cryptowez/openclaw-dashboard',
       'X-Title': 'OpenClaw Dashboard',
     },

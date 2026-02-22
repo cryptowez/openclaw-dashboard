@@ -2,12 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const GITHUB_API = 'https://api.github.com';
 
-function githubHeaders() {
-  const token = process.env.GITHUB_TOKEN;
+function githubHeaders(token?: string) {
+  const resolvedToken = token || process.env.GITHUB_TOKEN;
   return {
     Accept: 'application/vnd.github+json',
     'X-GitHub-Api-Version': '2022-11-28',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(resolvedToken ? { Authorization: `Bearer ${resolvedToken}` } : {}),
   } as Record<string, string>;
 }
 
@@ -18,6 +18,7 @@ export async function GET(request: NextRequest) {
   const action = searchParams.get('action');
   const owner = searchParams.get('owner');
   const repo = searchParams.get('repo');
+  const githubToken = searchParams.get('githubToken') || undefined;
 
   if (!owner || !repo) {
     return NextResponse.json({ error: 'owner and repo are required' }, { status: 400 });
@@ -28,7 +29,7 @@ export async function GET(request: NextRequest) {
       const branch = searchParams.get('branch') ?? 'HEAD';
       const res = await fetch(
         `${GITHUB_API}/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`,
-        { headers: githubHeaders() }
+        { headers: githubHeaders(githubToken) }
       );
       if (!res.ok) {
         const err = await res.json();
@@ -47,7 +48,7 @@ export async function GET(request: NextRequest) {
       if (!path) return NextResponse.json({ error: 'path is required' }, { status: 400 });
 
       const url = `${GITHUB_API}/repos/${owner}/${repo}/contents/${path}${branch ? `?ref=${branch}` : ''}`;
-      const res = await fetch(url, { headers: githubHeaders() });
+      const res = await fetch(url, { headers: githubHeaders(githubToken) });
       if (!res.ok) {
         const err = await res.json();
         return NextResponse.json({ error: err.message ?? 'GitHub API error' }, { status: res.status });
@@ -74,6 +75,7 @@ interface PushBody {
   message: string;
   branch?: string;
   sha?: string; // required when updating an existing file
+  githubToken?: string;
 }
 
 // POST /api/git  { action: 'push', ...PushBody }
@@ -86,7 +88,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: `Unknown action: ${action}` }, { status: 400 });
     }
 
-    const { owner, repo, path, content, message, branch, sha } = body as PushBody;
+    const { owner, repo, path, content, message, branch, sha, githubToken } = body as PushBody;
     if (!owner || !repo || !path || content == null || !message) {
       return NextResponse.json(
         { error: 'owner, repo, path, content, and message are required' },
@@ -103,7 +105,7 @@ export async function POST(request: NextRequest) {
 
     const res = await fetch(`${GITHUB_API}/repos/${owner}/${repo}/contents/${path}`, {
       method: 'PUT',
-      headers: { ...githubHeaders(), 'Content-Type': 'application/json' },
+      headers: { ...githubHeaders(githubToken), 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
 

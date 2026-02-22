@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Folders, Settings, Plus, X, Import } from 'lucide-react';
 import ImportGitModal from './ImportGitModal';
+import VaultSection from './VaultSection';
 
 export default function Sidebar() {
   const [showImportModal, setShowImportModal] = useState(false);
@@ -69,6 +70,7 @@ export default function Sidebar() {
       </div>
 
       {/* Footer */}
+      <VaultSection />
       <div className="p-4 border-t border-gray-800">
         <div className="flex items-center gap-3">
           <div className="h-8 w-8 rounded-full bg-gray-800" />
