@@ -6,12 +6,13 @@ interface AICommandRequest {
   command: string;
   model: string;
   context?: string;
+  apiKey?: string;
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body: AICommandRequest = await request.json();
-    const { projectName, command, model, context } = body;
+    const { projectName, command, model, context, apiKey } = body;
 
     if (!command.trim()) {
       return NextResponse.json(
@@ -28,7 +29,7 @@ export async function POST(request: NextRequest) {
 5. Always provide complete, working code
 ${context ? `\nContext about the project:\n${context}` : ''}`;
 
-    const result = await callOpenRouter(model, systemPrompt, command, 2000);
+    const result = await callOpenRouter(model, systemPrompt, command, 2000, apiKey);
     return NextResponse.json({
       result: result.content,
       model: result.model,

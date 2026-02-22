@@ -4,6 +4,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import Topbar from './Topbar';
 import Sidebar from './Sidebar';
 import ProjectWorkspace from './ProjectWorkspace';
+import SettingsModal from './SettingsModal';
 import { Project } from '@/types';
 import { ModelKey, DEFAULT_MODEL } from '@/lib/openrouter';
 
@@ -75,6 +76,7 @@ export default function AppShell() {
   const [activeTab, setActiveTab] = useState<string>('home');
   const [model, setModel] = useState<ModelKey>(DEFAULT_MODEL);
   const [aiLogs, setAiLogs] = useState<Map<string, Message[]>>(new Map());
+  const [showSettings, setShowSettings] = useState(false);
 
   // Open or focus a project tab
   const openProject = useCallback((project: Project) => {
@@ -143,6 +145,7 @@ export default function AppShell() {
         onTabClose={closeTab}
         model={model}
         onModelChange={setModel}
+        onSettingsClick={() => setShowSettings(true)}
       />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar
@@ -177,6 +180,7 @@ export default function AppShell() {
           )}
         </main>
       </div>
+      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
     </div>
   );
 }

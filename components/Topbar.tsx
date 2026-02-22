@@ -12,6 +12,7 @@ interface TopbarProps {
   onTabClose: (id: string) => void;
   model: ModelKey;
   onModelChange: (m: ModelKey) => void;
+  onSettingsClick: () => void;
 }
 
 export default function Topbar({
@@ -21,6 +22,7 @@ export default function Topbar({
   onTabClose,
   model,
   onModelChange,
+  onSettingsClick,
 }: TopbarProps) {
   return (
     <div className="h-10 flex-shrink-0 flex items-center bg-[#0d0d0d] border-b border-gray-800 px-2 gap-1 z-10">
@@ -86,7 +88,7 @@ export default function Topbar({
       </select>
 
       {/* Settings */}
-      <button className="p-1.5 hover:bg-gray-800 rounded text-gray-400 hover:text-white transition" title="Settings">
+      <button onClick={onSettingsClick} className="p-1.5 hover:bg-gray-800 rounded text-gray-400 hover:text-white transition" title="Settings">
         <Settings className="h-4 w-4" />
       </button>
     </div>
