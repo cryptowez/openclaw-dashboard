@@ -56,7 +56,12 @@ export default function ProjectWorkspace({
       const res = await fetch('/api/ai-command', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ projectName: project.name, command: sentPrompt, model }),
+        body: JSON.stringify({
+          projectName: project.name,
+          command: sentPrompt,
+          model,
+          apiKey: typeof window !== 'undefined' ? localStorage.getItem('vault_openrouter_key') ?? '' : '',
+        }),
       });
 
       if (!res.ok) {

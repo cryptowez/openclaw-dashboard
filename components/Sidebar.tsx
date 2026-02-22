@@ -48,8 +48,12 @@ export default function Sidebar({
     setPullStatus('loading');
     setGitMessage('');
     try {
+      const token = localStorage.getItem('vault_github_token') ?? '';
+      const headers: Record<string, string> = {};
+      if (token) headers['X-GitHub-Token'] = token;
       const res = await fetch(
-        `/api/git?action=list&owner=${encodeURIComponent(gitCoords.owner)}&repo=${encodeURIComponent(gitCoords.repo)}&branch=main`
+        `/api/git?action=list&owner=${encodeURIComponent(gitCoords.owner)}&repo=${encodeURIComponent(gitCoords.repo)}&branch=main`,
+        { headers }
       );
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? 'Pull failed');
