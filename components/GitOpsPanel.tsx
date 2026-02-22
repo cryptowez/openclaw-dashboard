@@ -38,7 +38,7 @@ export default function GitOpsPanel({
     setMessage('');
     try {
       const res = await fetch(
-        `/api/git?action=list&owner=${encodeURIComponent(owner)}&repo=${encodeURIComponent(repo)}&branch=${encodeURIComponent(branch)}`
+        `/api/git?action=list&owner=${encodeURIComponent(owner)}&repo=${encodeURIComponent(repo)}&branch=${encodeURIComponent(branch)}&githubToken=${encodeURIComponent(typeof window !== 'undefined' ? localStorage.getItem('vault_github_token') ?? '' : '')}`
       );
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? 'Pull failed');
@@ -81,6 +81,7 @@ export default function GitOpsPanel({
             message: commitMsg,
             branch,
             sha: existingFile?.sha,
+            githubToken: typeof window !== 'undefined' ? localStorage.getItem('vault_github_token') ?? '' : '',
           }),
         });
         const data = await res.json();

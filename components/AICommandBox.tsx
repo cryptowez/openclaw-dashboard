@@ -26,7 +26,12 @@ export const AICommandBox: React.FC<AICommandBoxProps> = ({ projectName, onComma
       const res = await fetch('/api/ai-command', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ projectName, command, model }),
+        body: JSON.stringify({
+          projectName,
+          command,
+          model,
+          apiKey: typeof window !== 'undefined' ? localStorage.getItem('vault_openrouter_key') ?? '' : '',
+        }),
       });
 
       if (!res.ok) {
